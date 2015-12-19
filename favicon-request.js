@@ -11,6 +11,8 @@ function faviconApp(req, res) {
         res.end();
         return;
     }
+    console.log('GET', req.url, req.headers.origin || '',
+        req.connection.remoteAddress || '', req.headers['x-forwarded-for'] || '');
     var domain = req.url.substr(1);
     if (domain.indexOf('.') < 0 || domain.indexOf('/') >= 0) {
         res.writeHead(404, {'Content-Type': 'text/plain'});
