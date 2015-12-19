@@ -14,11 +14,11 @@ var FaviconApp = function() {
      */
     self.setupVariables = function() {
         self.ipaddress = process.env.OPENSHIFT_NODEJS_IP;
-        self.port      = process.env.OPENSHIFT_NODEJS_PORT || 8080;
+        self.port = process.env.OPENSHIFT_NODEJS_PORT || 8080;
 
-        if (typeof self.ipaddress === "undefined") {
+        if (!self.ipaddress) {
             console.warn('No OPENSHIFT_NODEJS_IP var, using 127.0.0.1');
-            self.ipaddress = "127.0.0.1";
+            self.ipaddress = '127.0.0.1';
         }
     };
 
@@ -28,7 +28,7 @@ var FaviconApp = function() {
      *  @param {string} sig  Signal to terminate on.
      */
     self.terminator = function(sig){
-        if (typeof sig === "string") {
+        if (typeof sig === 'string') {
            console.log('%s: Received %s - terminating favicon app ...', new Date(Date.now()), sig);
            process.exit(1);
         }
@@ -67,6 +67,7 @@ var FaviconApp = function() {
      *  Initializes the sample application.
      */
     self.initialize = function() {
+        self.setupVariables();
         self.setupTerminationHandlers();
         self.initializeServer();
     };
