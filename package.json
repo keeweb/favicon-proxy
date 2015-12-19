@@ -1,7 +1,7 @@
 {
-  "name": "OpenShift-Favicon-App",
+  "name": "Favicon-App",
   "version": "1.0.0",
-  "description": "OpenShift Favicon Application",
+  "description": "Favicon Application",
   "keywords": [
     "OpenShift",
     "Node.js",
@@ -13,10 +13,11 @@
     "email": "dmitryvit@gmail.com",
     "url": "http://www.antelle.net/"
   },
-  "homepage": "http://www.antelle.net/",
+  "license": "MIT",
+  "homepage": "https://github.com/antelle/favicon-proxy",
   "repository": {
     "type": "git",
-    "url": "http"
+    "url": "https://github.com/antelle/favicon-proxy"
   },
 
   "engines": {
