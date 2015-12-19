@@ -15,6 +15,10 @@ https://favicon-antelle.rhcloud.com/apple.com
 - http://favicon.yandex.net/favicon/apple.com
 - https://icons.duckduckgo.com/ip2/apple.com
 
+## Usage
+
+Please, don't use my app instance if you need frequent requests: deploy your own one.
+
 ## License
 
 MIT
