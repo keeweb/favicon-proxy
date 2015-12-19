@@ -20,7 +20,7 @@ function faviconApp(req, res) {
 }
 
 function loadResource(url, res, redirectNum) {
-    var proto = url.startsWith('https') ? https : http;
+    var proto = url.lastIndexOf('https', 0) === 0 ? https : http;
     var serverReq = proto.get(url, function(srvRes) {
         if (srvRes.statusCode > 300 && srvRes.statusCode < 400 && srvRes.headers.location) {
             if (redirectNum > 3) {
