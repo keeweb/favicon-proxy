@@ -4,6 +4,10 @@ This service allows to load favicon for any website with CORS headers.
 Usage: favicon.yandex.net/favicon/apple.com
 It doesn't convert the icon to PNG format, just adds CORS headers to enable favicon display on any website.
 
+# Example
+
+https://favicon-antelle.rhcloud.com/apple.com
+
 # Alternatives
 
 - http://www.google.com/s2/favicons?domain=www.apple.com
