@@ -11,6 +11,13 @@ function faviconApp(req, res) {
         res.end();
         return;
     }
+    if (req.url === '/') {
+        res.writeHead(200, {'Content-Type': 'text/plain'});
+        res.end('This is a service for loading website favicon with CORS\n\n' +
+            'Usage: GET /domain.com\n' +
+            'Questions, source code: https://github.com/antelle/favicon-proxy');
+        return;
+    }
     console.log('GET', req.url, req.headers.origin || '',
         req.connection.remoteAddress || '', req.headers['x-forwarded-for'] || '');
     var domain = req.url.substr(1);
