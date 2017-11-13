@@ -1,7 +1,7 @@
-'use strict';
+/* eslint-disable no-console */
 
-var http = require('http'),
-    https = require('https');
+const http = require('http');
+const https = require('https');
 
 function faviconApp(req, res) {
     if (req.url === '/favicon.ico') {
@@ -13,12 +13,12 @@ function faviconApp(req, res) {
         res.writeHead(200, {'Content-Type': 'text/plain'});
         res.end('This is a service for loading website favicon with CORS\n\n' +
             'Usage: GET /domain.com\n' +
-            'Questions, source code: https://github.com/antelle/favicon-proxy');
+            'Questions, source code: https://github.com/keeweb/favicon-proxy');
         return;
     }
     console.log('GET', req.url, req.headers.origin || '',
         req.connection.remoteAddress || '', req.headers['x-forwarded-for'] || '');
-    var domain = req.url.substr(1);
+    const domain = req.url.substr(1);
     if (domain.indexOf('.') < 0 || domain.indexOf('/') >= 0) {
         res.writeHead(404, {'Content-Type': 'text/plain'});
         return res.end('Usage: GET /domain.com');
@@ -27,8 +27,8 @@ function faviconApp(req, res) {
 }
 
 function loadResource(url, res, redirectNum) {
-    var proto = url.lastIndexOf('https', 0) === 0 ? https : http;
-    var serverReq = proto.get(url, function(srvRes) {
+    const proto = url.lastIndexOf('https', 0) === 0 ? https : http;
+    const serverReq = proto.get(url, srvRes => {
         if (srvRes.statusCode > 300 && srvRes.statusCode < 400 && srvRes.headers.location) {
             if (redirectNum > 3) {
                 res.writeHead(404, {'Content-Type': 'text/plain'});
@@ -43,7 +43,7 @@ function loadResource(url, res, redirectNum) {
             return res.end('Status ' + srvRes.statusCode);
         }
     });
-    serverReq.on('error', function(e) {
+    serverReq.on('error', e => {
         res.writeHead(404, {'Content-Type': 'text/plain'});
         return res.end(e.message);
     });

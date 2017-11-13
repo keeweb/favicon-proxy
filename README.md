@@ -3,11 +3,11 @@
 This service allows to load favicon for any website with CORS headers.
 Usage: GET /domain.com  
 It doesn't convert the icon to PNG format, just adds CORS headers to enable favicon display on any website.  
-Ready for OpenShift.
+Ready for Heroku.
 
 ## Example
 
-https://favicon-antelle.rhcloud.com/apple.com
+https://favicon.keeweb.info/apple.com
 
 ## Alternatives
 

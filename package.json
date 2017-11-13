@@ -3,32 +3,31 @@
   "version": "1.0.0",
   "description": "Favicon Application",
   "keywords": [
-    "OpenShift",
     "Node.js",
     "application",
     "openshift"
   ],
   "author": {
     "name": "Antelle",
-    "email": "dmitryvit@gmail.com",
+    "email": "antelle.net@gmail.com",
     "url": "http://www.antelle.net/"
   },
   "license": "MIT",
-  "homepage": "https://github.com/antelle/favicon-proxy",
+  "homepage": "https://github.com/keeweb/favicon-proxy",
   "repository": {
     "type": "git",
-    "url": "https://github.com/antelle/favicon-proxy"
+    "url": "https://github.com/keeweb/favicon-proxy"
   },
-
   "engines": {
     "node": ">= 0.6.0",
     "npm": ">= 1.0.0"
   },
-
+  "scripts": {
+    "start": "node index.js"
+  },
   "dependencies": {},
   "devDependencies": {},
   "bundleDependencies": [],
-
   "private": true,
   "main": "server.js"
 }
