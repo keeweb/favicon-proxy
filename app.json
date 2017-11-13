@@ -1,0 +1,8 @@
+{
+  "name": "Download favicons from websites with CORS",
+  "description": "Favicon proxy",
+  "repository": "https://github.com/keeweb/favicon-proxy",
+  "logo": "https://cdn.rawgit.com/heroku/node-js-getting-started/master/public/node.svg",
+  "keywords": ["favicon", "keeweb", "node", "express", "heroku"],
+  "image": "keeweb/favicon-proxy"
+}
