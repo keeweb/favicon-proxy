@@ -11,17 +11,19 @@ function faviconApp(req, res) {
     }
     if (req.url === '/') {
         res.writeHead(200, {'Content-Type': 'text/plain'});
-        res.end('This is a service for loading website favicon with CORS\n\n' +
+        res.end('This is a service for loading website favicons with CORS\n\n' +
             'Usage: GET /domain.com\n' +
             'Questions, source code: https://github.com/keeweb/favicon-proxy');
         return;
     }
     console.log('GET', req.url, req.headers.origin || '',
         req.connection.remoteAddress || '', req.headers['x-forwarded-for'] || '');
-    const domain = req.url.substr(1);
+    const domain = req.url.substr(1).toLowerCase();
     if (domain.indexOf('.') < 0 || domain.indexOf('/') >= 0) {
-        res.writeHead(404, {'Content-Type': 'text/plain'});
-        return res.end('Usage: GET /domain.com');
+        return returnError(res, 'Usage: GET /domain.com');
+    }
+    if (domain.indexOf('keeweb.info') >= 0 || domain === 'favicon-proxy.herokuapp.com') {
+        return returnError(res, 'No, I cannot get my own favicon');
     }
     loadResource('http://' + domain + '/favicon.ico').then(srvRes => {
         pipeResponse(res, srvRes);
