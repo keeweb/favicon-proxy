@@ -23,31 +23,108 @@ function faviconApp(req, res) {
         res.writeHead(404, {'Content-Type': 'text/plain'});
         return res.end('Usage: GET /domain.com');
     }
-    loadResource('http://' + domain + '/favicon.ico', res);
-}
-
-function loadResource(url, res, redirectNum) {
-    const proto = url.lastIndexOf('https', 0) === 0 ? https : http;
-    const serverReq = proto.get(url, srvRes => {
-        if (srvRes.statusCode > 300 && srvRes.statusCode < 400 && srvRes.headers.location) {
-            if (redirectNum > 3) {
-                res.writeHead(404, {'Content-Type': 'text/plain'});
-                return res.end('Too many redirects');
-            }
-            return loadResource(srvRes.headers.location, res, (redirectNum || 0) + 1);
-        } else if (srvRes.statusCode === 200) {
-            res.writeHead(200, {'Content-Type': 'image/x-icon', 'Access-Control-Allow-Origin': '*'});
-            srvRes.pipe(res, {end: true});
+    loadResource('http://' + domain + '/favicon.ico').then(srvRes => {
+        pipeResponse(res, srvRes);
+    }).catch(e => {
+        if (e === 'Status 404') {
+            loadResource('http://' + domain).then(srvRes => {
+                readHtml(srvRes).then(html => {
+                    const iconUrl = getIconUrl(html, domain);
+                    if (iconUrl) {
+                        loadResource(iconUrl).then(srvRes => {
+                            pipeResponse(res, srvRes);
+                        }).catch(e => returnError(e));
+                    } else {
+                        returnError(res, 'No favicon');
+                    }
+                }).catch(e => returnError(res, e));
+            }).catch(e => returnError(res, e));
         } else {
-            res.writeHead(404, {'Content-Type': 'text/plain'});
-            return res.end('Status ' + srvRes.statusCode);
+            returnError(res, e);
         }
     });
-    serverReq.on('error', e => {
-        res.writeHead(404, {'Content-Type': 'text/plain'});
-        return res.end(e.message);
+}
+
+function loadResource(url, redirectNum) {
+    return new Promise((resolve, reject) => {
+        const proto = url.lastIndexOf('https', 0) === 0 ? https : http;
+        const serverReq = proto.get(url, srvRes => {
+            if (srvRes.statusCode > 300 && srvRes.statusCode < 400 && srvRes.headers.location) {
+                if (redirectNum > 3) {
+                    reject('Too many redirects');
+                } else {
+                    resolve(loadResource(srvRes.headers.location, (redirectNum || 0) + 1));
+                }
+            } else if (srvRes.statusCode === 200) {
+                resolve(srvRes);
+            } else {
+                reject('Status ' + srvRes.statusCode);
+            }
+        });
+        serverReq.on('error', e => {
+            reject(e.message);
+        });
+        serverReq.end();
     });
-    serverReq.end();
+}
+
+function readHtml(stream) {
+    return new Promise((resolve, reject) => {
+        const chunks = [];
+        stream.on('data', chunk => {
+            chunks.push(chunk);
+        });
+        stream.on('error', () => {
+            reject('HTML read error');
+        });
+        stream.on('end', () => {
+            resolve(Buffer.concat(chunks).toString('utf8'));
+        });
+    });
+}
+
+function getIconUrl(html, domain) {
+    const MAX_SIZE = 96;
+    let match;
+    const re = /<link\s+rel=["']?icon["']?[^>]*href="*([^"]+)"*/g;
+    let iconHref, iconSize = 0;
+    do {
+        match = re.exec(html);
+        if (match) {
+            const href = match[1];
+            const sizes = /sizes=["']?(\d+)/.exec(match[0]);
+            if (sizes) {
+                const size = +sizes[1];
+                if (size && size > iconSize && size <= MAX_SIZE) {
+                    iconHref = href;
+                    iconSize = size;
+                    console.log(href, size);
+                }
+            } else if (!iconHref) {
+                iconHref = href;
+            }
+        }
+    } while (match);
+    if (/\.(png|jpg|svg|gif)/.test(iconHref)) {
+        if (iconHref.indexOf('://') > 0) {
+            return iconHref;
+        } else {
+            if (!iconHref.startsWith('/')) {
+                iconHref = '/' + iconHref;
+            }
+            return 'http://' + domain + iconHref;
+        }
+    }
+}
+
+function pipeResponse(res, srvRes) {
+    res.writeHead(200, {'Content-Type': 'image/x-icon', 'Access-Control-Allow-Origin': '*'});
+    srvRes.pipe(res, {end: true});
+}
+
+function returnError(res, err) {
+    res.writeHead(404, {'Content-Type': 'text/plain'});
+    return res.end(err);
 }
 
 module.exports = faviconApp;
