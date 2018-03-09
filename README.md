@@ -17,7 +17,7 @@ https://favicon.keeweb.info/apple.com
 
 ## Usage
 
-Please, don't use my app instance if you need frequent requests: deploy your own one.
+Please don't use my app instance if you need frequent requests: deploy your own one.
 
 ## License
 
