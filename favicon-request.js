@@ -3,7 +3,10 @@
 const http = require('http');
 const https = require('https');
 
-const MAX_REDIRECTS = 5;
+const MAX_REDIRECTS = 3;
+const KNOWN_ICONS = {
+    'gmail.com': 'https://ssl.gstatic.com/ui/v1/icons/mail/images/favicon5.ico'
+};
 
 function faviconApp(req, res) {
     if (req.url === '/favicon.ico') {
@@ -27,7 +30,8 @@ function faviconApp(req, res) {
     if (domain.indexOf('keeweb.info') >= 0 || domain === 'favicon-proxy.herokuapp.com') {
         return returnError(res, 'No, I cannot get my own favicon');
     }
-    loadResource('http://' + domain + '/favicon.ico').then(srvRes => {
+    const faviconUrl = KNOWN_ICONS[domain] || 'http://' + domain + '/favicon.ico';
+    loadResource(faviconUrl).then(srvRes => {
         pipeResponse(res, srvRes);
     }).catch(e => {
         if (e === 'Status 404') {
