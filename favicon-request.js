@@ -3,6 +3,8 @@
 const http = require('http');
 const https = require('https');
 
+const MAX_REDIRECTS = 5;
+
 function faviconApp(req, res) {
     if (req.url === '/favicon.ico') {
         res.writeHead(204);
@@ -52,7 +54,7 @@ function loadResource(url, redirectNum) {
         const proto = url.lastIndexOf('https', 0) === 0 ? https : http;
         const serverReq = proto.get(url, srvRes => {
             if (srvRes.statusCode > 300 && srvRes.statusCode < 400 && srvRes.headers.location) {
-                if (redirectNum > 3) {
+                if (redirectNum > MAX_REDIRECTS) {
                     reject('Too many redirects');
                 } else {
                     resolve(loadResource(srvRes.headers.location, (redirectNum || 0) + 1));
