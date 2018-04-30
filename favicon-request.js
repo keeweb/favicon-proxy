@@ -109,14 +109,13 @@ function getIconUrl(html, domain) {
                 if (size && size > iconSize && size <= MAX_SIZE) {
                     iconHref = href;
                     iconSize = size;
-                    console.log(href, size);
                 }
             } else if (!iconHref) {
                 iconHref = href;
             }
         }
     } while (match);
-    if (/\.(png|jpg|svg|gif)/.test(iconHref)) {
+    if (/\.(png|jpg|svg|gif|ico)/.test(iconHref)) {
         if (iconHref.indexOf('://') > 0) {
             return iconHref;
         } else {
