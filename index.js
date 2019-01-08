@@ -76,4 +76,3 @@ class FaviconApp {
 const app = new FaviconApp();
 app.initialize();
 app.start();
-
