@@ -94,7 +94,7 @@ function readHtml(stream) {
 function getIconUrl(html, domain) {
     const MAX_SIZE = 96;
     let match;
-    const re = /<link\s+[^>]*rel=["']?icon["']?[^>]*>/g;
+    const re = /<link\s+[^>]*rel=["']?(?:shortcut )?icon["']?[^>]*>/g;
     let iconHref, iconSize = 0;
     do {
         match = re.exec(html);
