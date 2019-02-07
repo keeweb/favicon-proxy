@@ -63,7 +63,7 @@ function loadResource(url, redirectNum) {
                 } else {
                     resolve(loadResource(srvRes.headers.location, (redirectNum || 0) + 1));
                 }
-            } else if (srvRes.statusCode === 200) {
+            } else if (srvRes.statusCode === 200 && srvRes.headers['content-type'].startsWith('image/')) {
                 resolve(srvRes);
             } else {
                 reject('Status ' + srvRes.statusCode);
