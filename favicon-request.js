@@ -122,6 +122,9 @@ function getIconUrl(html, domain) {
             if (!iconHref.startsWith('/')) {
                 iconHref = '/' + iconHref;
             }
+            if (iconHref.startsWith('//')) {
+                return 'http:' + iconHref;
+            }
             return 'http://' + domain + iconHref;
         }
     }
