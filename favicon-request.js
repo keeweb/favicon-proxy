@@ -31,10 +31,14 @@ function faviconApp(req, res) {
         return returnError(res, 'No, I cannot get my own favicon');
     }
     const faviconUrl = KNOWN_ICONS[domain] || 'http://' + domain + '/favicon.ico';
-    loadResource(faviconUrl, undefined, true).then(srvRes => {
-        pipeResponse(res, srvRes);
+    loadResource(faviconUrl).then(srvRes => {
+        if (srvRes.headers['content-type'].startsWith('image/')) {
+            return pipeResponse(res, srvRes);
+        } else {
+            throw 'Bad content-type';
+        }
     }).catch(e => {
-        if (e === 'Status 404' || e === 'Status 200') {
+        if (e === 'Status 404' || e === 'Bad content-type') {
             loadResource('http://' + domain).then(srvRes => {
                 readHtml(srvRes).then(html => {
                     const iconUrl = getIconUrl(html, domain);
@@ -53,7 +57,7 @@ function faviconApp(req, res) {
     });
 }
 
-function loadResource(url, redirectNum, isFirst) {
+function loadResource(url, redirectNum) {
     return new Promise((resolve, reject) => {
         const proto = url.lastIndexOf('https', 0) === 0 ? https : http;
         const serverReq = proto.get(url, srvRes => {
@@ -63,14 +67,10 @@ function loadResource(url, redirectNum, isFirst) {
                 } else {
                     resolve(loadResource(srvRes.headers.location, (redirectNum || 0) + 1, isFirst));
                 }
-            } else if (srvRes.statusCode === 200 && srvRes.headers['content-type'].startsWith('image/')) {
+            } else if (srvRes.statusCode === 200) {
                 resolve(srvRes);
             } else {
-                if (!isFirst && srvRes.statusCode === 200) {
-                    resolve(srvRes);
-                } else {
-                    reject('Status ' + srvRes.statusCode);
-                }
+                reject('Status ' + srvRes.statusCode);
             }
         });
         serverReq.on('error', e => {
