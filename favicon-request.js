@@ -65,7 +65,7 @@ function loadResource(url, redirectNum) {
                 if (redirectNum > MAX_REDIRECTS) {
                     reject('Too many redirects');
                 } else {
-                    resolve(loadResource(srvRes.headers.location, (redirectNum || 0) + 1, isFirst));
+                    resolve(loadResource(srvRes.headers.location, (redirectNum || 0) + 1));
                 }
             } else if (srvRes.statusCode === 200) {
                 resolve(srvRes);
