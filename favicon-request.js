@@ -53,8 +53,7 @@ function faviconApp(req, res) {
     });
 }
 
-function loadResource(url, redirectNum, isFirstO) {
-    const isFirst = isFirstO || false;
+function loadResource(url, redirectNum, isFirst) {
     return new Promise((resolve, reject) => {
         const proto = url.lastIndexOf('https', 0) === 0 ? https : http;
         const serverReq = proto.get(url, srvRes => {

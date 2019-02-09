@@ -1,5 +1,17 @@
 {
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "impliedStrict": true
+    }
+  },
   "env": {
     "node": true
+  },
+  "rules": {
+    "no-undef": "error"
+  },
+  "globals": {
+    "Promise": false
   }
 }
