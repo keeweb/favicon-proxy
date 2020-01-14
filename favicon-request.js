@@ -57,6 +57,7 @@ function faviconApp(req, res) {
             'You have been warned right here in the README, right?\n' +
             'https://github.com/keeweb/favicon-proxy#usage\n' +
             'So here\'s your 403.');
+        return;
     }
     const domain = req.url.substr(1).toLowerCase();
     if (domain.indexOf('.') < 0 || domain.indexOf('/') >= 0) {
