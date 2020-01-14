@@ -31,20 +31,14 @@ function faviconApp(req, res) {
             'Questions, source code: https://github.com/keeweb/favicon-proxy');
         return;
     }
+    let action = '';
     if (req.headers.referer) {
         let refererDomain = req.headers.referer.match(/^\w+:\/\/([^/?]+)/);
         if (refererDomain) {
             refererDomain = refererDomain[1].toLowerCase();
         }
         if (bannedReferrers[refererDomain]) {
-            res.writeHead(403, { 'Content-Type': 'text/plain' });
-            res.end('Please don\'t use my instance, deploy your own one.\n' +
-                'You have been warned right here in the README, right?\n' +
-                'https://github.com/keeweb/favicon-proxy#usage\n' +
-                'So here\'s your 403.');
-            console.log(new Date().toISOString(), 'GET', req.url, req.headers.origin || '',
-                req.connection.remoteAddress || '', req.headers['x-forwarded-for'] || '',
-                '(blocked)');
+            action = 'blocked';
             return;
         }
     }
@@ -54,8 +48,16 @@ function faviconApp(req, res) {
         req.headers.origin || '',
         req.headers.referer || '',
         req.connection.remoteAddress || '',
-        req.headers['x-forwarded-for'] || ''
+        req.headers['x-forwarded-for'] || '',
+        action
     );
+    if (action === 'blocked') {
+        res.writeHead(403, { 'Content-Type': 'text/plain' });
+        res.end('Please don\'t use my instance, deploy your own one.\n' +
+            'You have been warned right here in the README, right?\n' +
+            'https://github.com/keeweb/favicon-proxy#usage\n' +
+            'So here\'s your 403.');
+    }
     const domain = req.url.substr(1).toLowerCase();
     if (domain.indexOf('.') < 0 || domain.indexOf('/') >= 0) {
         return returnError(res, 'Usage: GET /domain.com');
