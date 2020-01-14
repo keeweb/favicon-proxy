@@ -1,5 +1,7 @@
 /* eslint-disable no-console */
 
+const path = require('path');
+const fs = require('fs');
 const http = require('http');
 const https = require('https');
 
@@ -7,6 +9,14 @@ const MAX_REDIRECTS = 3;
 const KNOWN_ICONS = {
     'gmail.com': 'https://ssl.gstatic.com/ui/v1/icons/mail/images/favicon5.ico'
 };
+
+const bannedReferrers = {};
+
+fs.readFileSync(path.resolve(__dirname, 'conf/banned-referrers.txt'), 'utf8')
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line && !line.startsWith('#'))
+    .forEach(line => { bannedReferrers[line] = true; });
 
 function faviconApp(req, res) {
     if (req.url === '/favicon.ico') {
@@ -21,8 +31,31 @@ function faviconApp(req, res) {
             'Questions, source code: https://github.com/keeweb/favicon-proxy');
         return;
     }
-    console.log('GET', req.url, req.headers.origin || '',
-        req.connection.remoteAddress || '', req.headers['x-forwarded-for'] || '');
+    if (req.headers.referer) {
+        let refererDomain = req.headers.referer.match(/^\w+:\/\/([^/?]+)/);
+        if (refererDomain) {
+            refererDomain = refererDomain[1].toLowerCase();
+        }
+        if (bannedReferrers[refererDomain]) {
+            res.writeHead(403, { 'Content-Type': 'text/plain' });
+            res.end('Please don\'t use my instance, deploy your own one.\n' +
+                'You have been warned right here in the README, right?\n' +
+                'https://github.com/keeweb/favicon-proxy#usage\n' +
+                'So here\'s your 403.');
+            console.log(new Date().toISOString(), 'GET', req.url, req.headers.origin || '',
+                req.connection.remoteAddress || '', req.headers['x-forwarded-for'] || '',
+                '(blocked)');
+            return;
+        }
+    }
+    console.log(new Date().toISOString(),
+        'GET',
+        req.url,
+        req.headers.origin || '',
+        req.headers.referer || '',
+        req.connection.remoteAddress || '',
+        req.headers['x-forwarded-for'] || ''
+    );
     const domain = req.url.substr(1).toLowerCase();
     if (domain.indexOf('.') < 0 || domain.indexOf('/') >= 0) {
         return returnError(res, 'Usage: GET /domain.com');
