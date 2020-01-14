@@ -39,7 +39,6 @@ function faviconApp(req, res) {
         }
         if (bannedReferrers[refererDomain]) {
             action = 'blocked';
-            return;
         }
     }
     console.log(new Date().toISOString(),
