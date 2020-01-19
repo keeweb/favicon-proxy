@@ -60,10 +60,10 @@ function faviconApp(req, res) {
     }
     const domain = req.url.substr(1).toLowerCase();
     if (domain.indexOf('.') < 0 || domain.indexOf('/') >= 0) {
-        return returnError(res, 'Usage: GET /domain.com');
+        return returnError(404, res, 'Usage: GET /domain.com');
     }
     if (domain.indexOf('keeweb.info') >= 0 || domain === 'favicon-proxy.herokuapp.com') {
-        return returnError(res, 'No, I cannot get my own favicon');
+        return returnError(403, res, 'No, I cannot get my own favicon');
     }
     const faviconUrl = KNOWN_ICONS[domain] || 'http://' + domain + '/favicon.ico';
     loadResource(faviconUrl).then(srvRes => {
@@ -80,14 +80,14 @@ function faviconApp(req, res) {
                     if (iconUrl) {
                         loadResource(iconUrl).then(srvRes => {
                             pipeResponse(res, srvRes);
-                        }).catch(e => returnError(e));
+                        }).catch(e => returnError(500, res, e));
                     } else {
-                        returnError(res, 'No favicon');
+                        returnError(404, res, 'No favicon');
                     }
-                }).catch(e => returnError(res, e));
-            }).catch(e => returnError(res, e));
+                }).catch(e => returnError(500, res, e));
+            }).catch(e => returnError(500, res, e));
         } else {
-            returnError(res, e);
+            returnError(500, res, e);
         }
     });
 }
@@ -174,9 +174,9 @@ function pipeResponse(res, srvRes) {
     srvRes.pipe(res, {end: true});
 }
 
-function returnError(res, err) {
-    res.writeHead(404, {'Content-Type': 'text/plain'});
-    return res.end(err);
+function returnError(code, res, err) {
+    res.writeHead(code, {'Content-Type': 'text/plain'});
+    return res.end(String(err));
 }
 
 module.exports = faviconApp;
