@@ -59,7 +59,7 @@ function faviconApp(req, res) {
         return;
     }
     const domain = req.url.substr(1).toLowerCase();
-    if (domain.indexOf('.') < 0 || domain.indexOf('/') >= 0) {
+    if (domain.indexOf('.') < 0 || domain.match(/[/:]/)) {
         return returnError(404, res, 'Usage: GET /domain.com');
     }
     if (domain.indexOf('keeweb.info') >= 0 || domain === 'favicon-proxy.herokuapp.com') {
