@@ -94,7 +94,14 @@ function faviconApp(req, res) {
 
 function loadResource(url, redirectNum) {
     return new Promise((resolve, reject) => {
-        const proto = url.lastIndexOf('https', 0) === 0 ? https : http;
+        const proto = url.startsWith('https://') ? https :
+            url.startsWith('http://') ? http : undefined;
+        if (!proto) {
+            return reject('Invalid protocol');
+        }
+        if (/:\/\/(127\.|192\.|0\.0\.|localhost|(\w+\.)?keeweb\.info)/i.test(url)) {
+            return reject('Bad redirect: ' + url);
+        }
         const serverReq = proto.get(url, srvRes => {
             if (srvRes.statusCode > 300 && srvRes.statusCode < 400 && srvRes.headers.location) {
                 if (redirectNum > MAX_REDIRECTS) {
