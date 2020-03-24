@@ -7,7 +7,7 @@ Ready for Heroku.
 
 ## Example
 
-https://favicon.keeweb.info/apple.com
+https://services.keeweb.info/favicon/apple.com
 
 ## Alternatives
 
