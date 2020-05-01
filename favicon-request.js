@@ -9,6 +9,7 @@ const MAX_REDIRECTS = 3;
 const KNOWN_ICONS = {
     'gmail.com': 'https://ssl.gstatic.com/ui/v1/icons/mail/images/favicon5.ico'
 };
+const DEBUG = process.env.DEBUG_FAVICON;
 
 const bannedReferrers = {};
 
@@ -67,7 +68,8 @@ function faviconApp(req, res) {
     }
     const faviconUrl = KNOWN_ICONS[domain] || 'http://' + domain + '/favicon.ico';
     loadResource(faviconUrl).then(srvRes => {
-        if (srvRes.headers['content-type'].startsWith('image/')) {
+        const contentType = srvRes.headers['content-type'];
+        if (contentType.startsWith('image/') || contentType === 'application/octet-stream') {
             return pipeResponse(res, srvRes);
         } else {
             throw 'Bad content-type';
@@ -93,6 +95,7 @@ function faviconApp(req, res) {
 }
 
 function loadResource(url, redirectNum) {
+    DEBUG && console.log('GET', url);
     return new Promise((resolve, reject) => {
         const proto = url.startsWith('https://') ? https :
             url.startsWith('http://') ? http : undefined;
@@ -103,6 +106,7 @@ function loadResource(url, redirectNum) {
             return reject('Bad redirect: ' + url);
         }
         const serverReq = proto.get(url, srvRes => {
+            DEBUG && console.log(srvRes.statusCode);
             if (srvRes.statusCode > 300 && srvRes.statusCode < 400 && srvRes.headers.location) {
                 if (redirectNum > MAX_REDIRECTS) {
                     reject('Too many redirects');
