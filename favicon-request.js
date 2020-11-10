@@ -11,6 +11,8 @@ const KNOWN_ICONS = {
 };
 const DEBUG = process.env.DEBUG_FAVICON;
 const IP_THROTTLING_MS = 1000;
+const IP_THROTTLING_AGGRESSIVE_LOCKDOWN_DETECTION_THRESHOLD = 100;
+const IP_THROTTLING_AGGRESSIVE_LOCKDOWN_TIME_MS = 60 * 60 * 1000;
 const lastRequestDatePerIp = new Map();
 
 const bannedReferrers = {};
@@ -216,15 +218,21 @@ function pipeResponse(res, srvRes) {
 }
 
 function needThrottle(clientIp, now) {
-    const lastRequestDate = lastRequestDatePerIp.get(clientIp);
+    let lastRequestDate = lastRequestDatePerIp.get(clientIp);
     let throttled = false;
+
+    let newLastRequestDate = now.getTime();
     if (lastRequestDate) {
         const dateDiff = now - lastRequestDate;
         if (dateDiff < IP_THROTTLING_MS) {
+            if (dateDiff < IP_THROTTLING_AGGRESSIVE_LOCKDOWN_DETECTION_THRESHOLD) {
+                newLastRequestDate += IP_THROTTLING_AGGRESSIVE_LOCKDOWN_TIME_MS;
+            }
             throttled = true;
         }
     }
-    lastRequestDatePerIp.set(clientIp, now.getTime());
+
+    lastRequestDatePerIp.set(clientIp, newLastRequestDate);
 
     if (lastRequestDatePerIp.size > 50) {
         for (const [ip, dt] of lastRequestDatePerIp.entries()) {
@@ -233,6 +241,7 @@ function needThrottle(clientIp, now) {
             }
         }
     }
+
     return throttled;
 }
 
