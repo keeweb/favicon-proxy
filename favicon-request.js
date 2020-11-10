@@ -6,6 +6,7 @@ const http = require('http');
 const https = require('https');
 
 const MAX_REDIRECTS = 3;
+const MAX_RESPONSE_CHUNKS = 1000;
 const KNOWN_ICONS = {
     'gmail.com': 'https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico'
 };
@@ -158,7 +159,11 @@ function readHtml(stream) {
     return new Promise((resolve, reject) => {
         const chunks = [];
         stream.on('data', (chunk) => {
-            chunks.push(chunk);
+            if (chunks.length > MAX_RESPONSE_CHUNKS) {
+                return reject('Response too large');
+            } else {
+                chunks.push(chunk);
+            }
         });
         stream.on('error', () => {
             reject('HTML read error');
