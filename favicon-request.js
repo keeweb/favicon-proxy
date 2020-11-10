@@ -80,7 +80,7 @@ function faviconApp(req, res) {
     if (domain.indexOf('.') < 0 || domain.match(/[\/:]|(\.\.)/)) {
         return returnError(404, res, 'Usage: GET /domain.com');
     }
-    if (domain.indexOf('keeweb.info') >= 0 || domain === 'favicon-proxy.herokuapp.com') {
+    if (domain.indexOf('keeweb.info') >= 0) {
         return returnError(403, res, 'No, I cannot get my own favicon');
     }
     const faviconUrl = KNOWN_ICONS[domain] || 'http://' + domain + '/favicon.ico';
