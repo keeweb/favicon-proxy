@@ -7,7 +7,7 @@ const https = require('https');
 
 const MAX_REDIRECTS = 3;
 const KNOWN_ICONS = {
-    'gmail.com': 'https://ssl.gstatic.com/ui/v1/icons/mail/images/favicon5.ico'
+    'gmail.com': 'https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico'
 };
 const DEBUG = process.env.DEBUG_FAVICON;
 const IP_THROTTLING_MS = 1000;
