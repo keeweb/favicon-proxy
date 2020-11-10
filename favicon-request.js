@@ -50,10 +50,11 @@ function faviconApp(req, res) {
         new Date().toISOString(),
         'GET',
         req.url,
-        req.headers.origin || '',
-        req.headers.referer || '',
-        req.connection.remoteAddress || '',
-        req.headers['x-forwarded-for'] || '',
+        req.headers.origin || '-',
+        req.headers.referer || '-',
+        req.headers.userAgent || '-',
+        req.connection.remoteAddress || '-',
+        req.headers['x-forwarded-for'] || '-',
         action
     );
     if (action === 'blocked') {
