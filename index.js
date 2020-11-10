@@ -35,14 +35,28 @@ class FaviconApp {
      *  Setup termination handlers (for exit and a list of signals).
      */
     setupTerminationHandlers() {
-        process.on('exit', () => { this.terminator(); });
+        process.on('exit', () => {
+            this.terminator();
+        });
 
         // Removed 'SIGPIPE' from the list - bugz 852598.
         [
-            'SIGHUP', 'SIGINT', 'SIGQUIT', 'SIGILL', 'SIGTRAP', 'SIGABRT',
-            'SIGBUS', 'SIGFPE', 'SIGUSR1', 'SIGSEGV', 'SIGUSR2', 'SIGTERM'
-        ].forEach(element => {
-            process.on(element, () => { this.terminator(element); });
+            'SIGHUP',
+            'SIGINT',
+            'SIGQUIT',
+            'SIGILL',
+            'SIGTRAP',
+            'SIGABRT',
+            'SIGBUS',
+            'SIGFPE',
+            'SIGUSR1',
+            'SIGSEGV',
+            'SIGUSR2',
+            'SIGTERM'
+        ].forEach((element) => {
+            process.on(element, () => {
+                this.terminator(element);
+            });
         });
     }
 

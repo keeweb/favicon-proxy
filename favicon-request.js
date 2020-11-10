@@ -15,9 +15,11 @@ const bannedReferrers = {};
 
 fs.readFileSync(path.resolve(__dirname, 'conf/banned-referrers.txt'), 'utf8')
     .split('\n')
-    .map(line => line.trim())
-    .filter(line => line && !line.startsWith('#'))
-    .forEach(line => { bannedReferrers[line] = true; });
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith('#'))
+    .forEach((line) => {
+        bannedReferrers[line] = true;
+    });
 
 function faviconApp(req, res) {
     if (req.url === '/favicon.ico') {
@@ -26,10 +28,12 @@ function faviconApp(req, res) {
         return;
     }
     if (req.url === '/') {
-        res.writeHead(200, {'Content-Type': 'text/plain'});
-        res.end('This is a service for loading website favicons with CORS\n\n' +
-            'Usage: GET /domain.com\n' +
-            'Questions, source code: https://github.com/keeweb/favicon-proxy');
+        res.writeHead(200, { 'Content-Type': 'text/plain' });
+        res.end(
+            'This is a service for loading website favicons with CORS\n\n' +
+                'Usage: GET /domain.com\n' +
+                'Questions, source code: https://github.com/keeweb/favicon-proxy'
+        );
         return;
     }
     let action = '';
@@ -42,7 +46,8 @@ function faviconApp(req, res) {
             action = 'blocked';
         }
     }
-    console.log(new Date().toISOString(),
+    console.log(
+        new Date().toISOString(),
         'GET',
         req.url,
         req.headers.origin || '',
@@ -53,10 +58,12 @@ function faviconApp(req, res) {
     );
     if (action === 'blocked') {
         res.writeHead(403, { 'Content-Type': 'text/plain' });
-        res.end('Please don\'t use my instance, deploy your own one.\n' +
-            'You have been warned right here in the README, right?\n' +
-            'https://github.com/keeweb/favicon-proxy#usage\n' +
-            'So here\'s your 403.');
+        res.end(
+            "Please don't use my instance, deploy your own one.\n" +
+                'You have been warned right here in the README, right?\n' +
+                'https://github.com/keeweb/favicon-proxy#usage\n' +
+                "So here's your 403."
+        );
         return;
     }
     const domain = req.url.substr(1).toLowerCase();
@@ -67,45 +74,56 @@ function faviconApp(req, res) {
         return returnError(403, res, 'No, I cannot get my own favicon');
     }
     const faviconUrl = KNOWN_ICONS[domain] || 'http://' + domain + '/favicon.ico';
-    loadResource(faviconUrl).then(srvRes => {
-        const contentType = srvRes.headers['content-type'];
-        if (contentType.startsWith('image/') || contentType === 'application/octet-stream') {
-            return pipeResponse(res, srvRes);
-        } else {
-            throw 'Bad content-type';
-        }
-    }).catch(e => {
-        if (e === 'Status 404' || e === 'Bad content-type') {
-            loadResource('http://' + domain).then(srvRes => {
-                readHtml(srvRes).then(html => {
-                    const iconUrl = getIconUrl(html, domain);
-                    if (iconUrl) {
-                        loadResource(iconUrl).then(srvRes => {
-                            pipeResponse(res, srvRes);
-                        }).catch(e => returnError(500, res, e));
-                    } else {
-                        returnError(404, res, 'No favicon');
-                    }
-                }).catch(e => returnError(500, res, e));
-            }).catch(e => returnError(500, res, e));
-        } else {
-            returnError(500, res, e);
-        }
-    });
+    loadResource(faviconUrl)
+        .then((srvRes) => {
+            const contentType = srvRes.headers['content-type'];
+            if (contentType.startsWith('image/') || contentType === 'application/octet-stream') {
+                return pipeResponse(res, srvRes);
+            } else {
+                throw 'Bad content-type';
+            }
+        })
+        .catch((e) => {
+            if (e === 'Status 404' || e === 'Bad content-type') {
+                loadResource('http://' + domain)
+                    .then((srvRes) => {
+                        readHtml(srvRes)
+                            .then((html) => {
+                                const iconUrl = getIconUrl(html, domain);
+                                if (iconUrl) {
+                                    loadResource(iconUrl)
+                                        .then((srvRes) => {
+                                            pipeResponse(res, srvRes);
+                                        })
+                                        .catch((e) => returnError(500, res, e));
+                                } else {
+                                    returnError(404, res, 'No favicon');
+                                }
+                            })
+                            .catch((e) => returnError(500, res, e));
+                    })
+                    .catch((e) => returnError(500, res, e));
+            } else {
+                returnError(500, res, e);
+            }
+        });
 }
 
 function loadResource(url, redirectNum) {
     DEBUG && console.log('GET', url);
     return new Promise((resolve, reject) => {
-        const proto = url.startsWith('https://') ? https :
-            url.startsWith('http://') ? http : undefined;
+        const proto = url.startsWith('https://')
+            ? https
+            : url.startsWith('http://')
+            ? http
+            : undefined;
         if (!proto) {
             return reject('Invalid protocol');
         }
         if (/:\/\/(127\.|192\.|0\.0\.|localhost|(\w+\.)?keeweb\.info)/i.test(url)) {
             return reject('Bad redirect: ' + url);
         }
-        const serverReq = proto.get(url, srvRes => {
+        const serverReq = proto.get(url, (srvRes) => {
             DEBUG && console.log(srvRes.statusCode);
             if (srvRes.statusCode > 300 && srvRes.statusCode < 400 && srvRes.headers.location) {
                 if (redirectNum > MAX_REDIRECTS) {
@@ -119,7 +137,7 @@ function loadResource(url, redirectNum) {
                 reject('Status ' + srvRes.statusCode);
             }
         });
-        serverReq.on('error', e => {
+        serverReq.on('error', (e) => {
             reject(e.message);
         });
         serverReq.end();
@@ -129,7 +147,7 @@ function loadResource(url, redirectNum) {
 function readHtml(stream) {
     return new Promise((resolve, reject) => {
         const chunks = [];
-        stream.on('data', chunk => {
+        stream.on('data', (chunk) => {
             chunks.push(chunk);
         });
         stream.on('error', () => {
@@ -145,7 +163,8 @@ function getIconUrl(html, domain) {
     const MAX_SIZE = 96;
     let match;
     const re = /<link\s+[^>]*rel=["']?(?:shortcut )?icon["']?[^>]*>/g;
-    let iconHref, iconSize = 0;
+    let iconHref,
+        iconSize = 0;
     do {
         match = re.exec(html);
         if (match) {
@@ -181,12 +200,15 @@ function getIconUrl(html, domain) {
 }
 
 function pipeResponse(res, srvRes) {
-    res.writeHead(200, {'Content-Type': 'image/x-icon', 'Access-Control-Allow-Origin': '*'});
-    srvRes.pipe(res, {end: true});
+    res.writeHead(200, {
+        'Content-Type': 'image/x-icon',
+        'Access-Control-Allow-Origin': '*'
+    });
+    srvRes.pipe(res, { end: true });
 }
 
 function returnError(code, res, err) {
-    res.writeHead(code, {'Content-Type': 'text/plain'});
+    res.writeHead(code, { 'Content-Type': 'text/plain' });
     return res.end(String(err));
 }
 
