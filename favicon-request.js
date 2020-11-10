@@ -10,6 +10,8 @@ const KNOWN_ICONS = {
     'gmail.com': 'https://ssl.gstatic.com/ui/v1/icons/mail/images/favicon5.ico'
 };
 const DEBUG = process.env.DEBUG_FAVICON;
+const IP_THROTTLING_MS = 1000;
+const lastRequestDatePerIp = new Map();
 
 const bannedReferrers = {};
 
@@ -36,36 +38,41 @@ function faviconApp(req, res) {
         );
         return;
     }
-    let action = '';
+
+    let blockStatusCode = 0;
+    let blockReason = '';
     if (req.headers.referer) {
         let refererDomain = req.headers.referer.match(/^\w+:\/\/([^/?]+)/);
         if (refererDomain) {
             refererDomain = refererDomain[1].toLowerCase();
         }
         if (bannedReferrers[refererDomain]) {
-            action = 'blocked';
+            blockReason = 'Forbidden';
+            blockStatusCode = 403;
         }
     }
+
+    const clientIp = req.headers['cf-connecting-ip'] || req.connection.remoteAddress;
+    const now = new Date();
+
+    if (needThrottle(clientIp, now)) {
+        blockReason = 'Too many requests';
+        blockStatusCode = 429;
+    }
+
     console.log(
-        new Date().toISOString(),
+        now.toISOString(),
         'GET',
         req.url,
         req.headers.origin || '-',
         req.headers.referer || '-',
         req.headers['user-agent'] || '-',
-        req.connection.remoteAddress || '-',
-        req.headers['x-forwarded-for'] || '-',
-        action
+        clientIp,
+        req.headers['cf-ipcountry'] || '-',
+        blockReason || '-'
     );
-    if (action === 'blocked') {
-        res.writeHead(403, { 'Content-Type': 'text/plain' });
-        res.end(
-            "Please don't use my instance, deploy your own one.\n" +
-                'You have been warned right here in the README, right?\n' +
-                'https://github.com/keeweb/favicon-proxy#usage\n' +
-                "So here's your 403."
-        );
-        return;
+    if (blockReason) {
+        return returnError(blockStatusCode || 403, res, blockReason);
     }
     const domain = req.url.substr(1).toLowerCase();
     if (domain.indexOf('.') < 0 || domain.match(/[\/:]|(\.\.)/)) {
@@ -206,6 +213,27 @@ function pipeResponse(res, srvRes) {
         'Access-Control-Allow-Origin': '*'
     });
     srvRes.pipe(res, { end: true });
+}
+
+function needThrottle(clientIp, now) {
+    const lastRequestDate = lastRequestDatePerIp.get(clientIp);
+    let throttled = false;
+    if (lastRequestDate) {
+        const dateDiff = now - lastRequestDate;
+        if (dateDiff < IP_THROTTLING_MS) {
+            throttled = true;
+        }
+    }
+    lastRequestDatePerIp.set(clientIp, now.getTime());
+
+    if (lastRequestDatePerIp.size > 50) {
+        for (const [ip, dt] of lastRequestDatePerIp.entries()) {
+            if (now - dt > IP_THROTTLING_MS) {
+                lastRequestDatePerIp.delete(ip);
+            }
+        }
+    }
+    return throttled;
 }
 
 function returnError(code, res, err) {
