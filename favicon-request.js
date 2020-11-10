@@ -52,7 +52,7 @@ function faviconApp(req, res) {
         req.url,
         req.headers.origin || '-',
         req.headers.referer || '-',
-        req.headers.userAgent || '-',
+        req.headers['user-agent'] || '-',
         req.connection.remoteAddress || '-',
         req.headers['x-forwarded-for'] || '-',
         action
