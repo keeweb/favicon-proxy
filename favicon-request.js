@@ -11,9 +11,11 @@ const KNOWN_ICONS = {
     'gmail.com': 'https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico'
 };
 const DEBUG = process.env.DEBUG_FAVICON;
-const IP_THROTTLING_MS = 1000;
-const IP_THROTTLING_AGGRESSIVE_LOCKDOWN_DETECTION_THRESHOLD = 100;
-const IP_THROTTLING_AGGRESSIVE_LOCKDOWN_TIME_MS = 60 * 60 * 1000;
+const IP_THROTTLING_MS = process.env.IP_THROTTLING_MS || 1000;
+const IP_THROTTLING_AGGRESSIVE_LOCKDOWN_DETECTION_THRESHOLD =
+    process.env.IP_THROTTLING_AGGRESSIVE_LOCKDOWN_DETECTION_THRESHOLD || 100;
+const IP_THROTTLING_AGGRESSIVE_LOCKDOWN_TIME_MS =
+    process.env.IP_THROTTLING_AGGRESSIVE_LOCKDOWN_TIME_MS || 60 * 60 * 1000;
 const lastRequestDatePerIp = new Map();
 
 const bannedReferrers = {};
@@ -223,6 +225,10 @@ function pipeResponse(res, srvRes) {
 }
 
 function needThrottle(clientIp, now) {
+    if (!IP_THROTTLING_MS) {
+        return false;
+    }
+
     let lastRequestDate = lastRequestDatePerIp.get(clientIp);
     let throttled = false;
 
@@ -230,7 +236,11 @@ function needThrottle(clientIp, now) {
     if (lastRequestDate) {
         const dateDiff = now - lastRequestDate;
         if (dateDiff < IP_THROTTLING_MS) {
-            if (dateDiff < IP_THROTTLING_AGGRESSIVE_LOCKDOWN_DETECTION_THRESHOLD) {
+            if (
+                IP_THROTTLING_AGGRESSIVE_LOCKDOWN_DETECTION_THRESHOLD &&
+                IP_THROTTLING_AGGRESSIVE_LOCKDOWN_TIME_MS &&
+                dateDiff < IP_THROTTLING_AGGRESSIVE_LOCKDOWN_DETECTION_THRESHOLD
+            ) {
                 newLastRequestDate += IP_THROTTLING_AGGRESSIVE_LOCKDOWN_TIME_MS;
             }
             throttled = true;
