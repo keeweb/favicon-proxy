@@ -141,10 +141,17 @@ function loadResource(url, redirectNum) {
         const serverReq = proto.get(url, (srvRes) => {
             DEBUG && console.log(srvRes.statusCode);
             if (srvRes.statusCode > 300 && srvRes.statusCode < 400 && srvRes.headers.location) {
+                const redirectLocation = srvRes.headers.location;
+                try {
+                    new URI(redirectLocation);
+                } catch {
+                    DEBUG && console.log(`Bad redirect: ${redirectLocation}`);
+                    return reject('Bad redirect');
+                }
                 if (redirectNum > MAX_REDIRECTS) {
                     reject('Too many redirects');
                 } else {
-                    resolve(loadResource(srvRes.headers.location, (redirectNum || 0) + 1));
+                    resolve(loadResource(redirectLocation, (redirectNum || 0) + 1));
                 }
             } else if (srvRes.statusCode === 200) {
                 resolve(srvRes);
