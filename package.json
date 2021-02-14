@@ -23,7 +23,8 @@
     "npm": ">= 1.0.0"
   },
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "debug": "DEBUG_FAVICON=1 node index.js"
   },
   "dependencies": {},
   "devDependencies": {},

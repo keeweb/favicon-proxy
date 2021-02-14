@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const http = require('http');
 const https = require('https');
+const { URL } = require('url');
 
 const MAX_REDIRECTS = 3;
 const MAX_RESPONSE_CHUNKS = 1000;
@@ -143,7 +144,7 @@ function loadResource(url, redirectNum) {
             if (srvRes.statusCode > 300 && srvRes.statusCode < 400 && srvRes.headers.location) {
                 const redirectLocation = srvRes.headers.location;
                 try {
-                    new URI(redirectLocation);
+                    new URL(redirectLocation);
                 } catch {
                     DEBUG && console.log(`Bad redirect: ${redirectLocation}`);
                     return reject('Bad redirect');
